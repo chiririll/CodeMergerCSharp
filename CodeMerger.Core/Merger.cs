@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 
@@ -34,6 +35,8 @@ public class Merger
             var merger = new ProjectMerger(project);
 
             var result = await merger.Merge();
+            result = RepeatedSpace().Replace(result.Replace("\r", "").Replace("\n", ""), " ");
+
             File.WriteAllText(Path.Join(options.OutputPath, project.Name + ".cs"), result, System.Text.Encoding.UTF8);
         }
 
@@ -53,4 +56,7 @@ public class Merger
             return null;
         }
     }
+
+    [GeneratedRegex(" +")]
+    private static partial Regex RepeatedSpace();
 }
