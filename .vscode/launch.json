@@ -11,7 +11,10 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/CodeMerger.Cli/bin/Debug/net8.0/CodeMerger.Cli.dll",
-            "args": [],
+            "args": [
+                "--sln", "${workspaceFolder}/../Threats/Threats.sln",
+                "-o", "${workspaceFolder}/out"
+            ],
             "cwd": "${workspaceFolder}/CodeMerger.Cli",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
