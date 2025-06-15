@@ -20,14 +20,22 @@ internal sealed class Program
         }
 
         var program = new Program(options.Value);
-        program.Run();
+        try
+        {
+            program.Run().Wait();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 
-    public void Run()
+    public async Task Run()
     {
         var mergerOptions = CodeMergingOptionsBuilder.Build(options);
         var merger = new Merger(mergerOptions);
 
-        merger.Run(options.SolutionFile, options.Projects.ToArray()).Wait();
+        var result = await merger.Run(options.SolutionFile, options.Projects.ToArray());
+        Console.WriteLine($"Result: {result}");
     }
 }

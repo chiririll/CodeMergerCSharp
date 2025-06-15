@@ -1,0 +1,97 @@
+name: Build CodeMerger
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build 
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - name: "Windows x64 .NET 9.0"
+            framework: "net9.0"
+            runtime: "win-x64"
+          - name: "Windows x64 .NET 9.0 Portable"
+            framework: "net9.0"
+            runtime: "win-x64"
+            sc: true
+          - name: "Linux x64 .NET 9.0"
+            framework: "net9.0"
+            runtime: "linux-x64"
+          - name: "Linux x64 .NET 9.0 Portable"
+            framework: "net9.0"
+            runtime: "linux-x64"
+            sc: true
+
+    env:
+      project: CodeMerger.Cli/CodeMerger.Cli.csproj
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Version Bump
+        if: github.ref_type == 'tag'
+        run: sed -Ei "s|<VersionPrefix>[0-9]*\.[0-9]*\.[0-9]*</VersionPrefix>|<VersionPrefix>${GITHUB_REF_NAME}</VersionPrefix>|g" ${{env.project}}
+
+      - name: Publish ${{ matrix.name }} Artifacts
+        run: |
+          ARTIFACTS=publish-${{ matrix.runtime }}-${{ matrix.framework }}${{ matrix.sc && '-portable' || '' }}
+          echo "ARTIFACTS=$ARTIFACTS" >> $GITHUB_ENV
+
+          dotnet publish ${{env.project}} \
+            -c Release \
+            -r ${{ matrix.runtime }} \
+            -f ${{ matrix.framework }} \
+            ${{ matrix.sc && '--sc' || '' }} \
+            -o $ARTIFACTS
+
+      - name: Upload ${{ matrix.name }} Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeMerger ${{ matrix.name }}
+          path: ${{ env.ARTIFACTS }}
+
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+    needs: [ build ]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: CodeMerger *
+
+      - name: Copy artifacts
+        run: |
+          mkdir Artifacts
+          cp "CodeMerger Windows x64 .NET 9.0/CodeMerger.exe" "Artifacts/CodeMerger.Windows.x64.NET.9.0.exe"
+          cp "CodeMerger Windows x64 .NET 9.0 Portable/CodeMerger.exe" "Artifacts/CodeMerger.Portable.Windows.x64.NET.9.0.exe"
+          cp "CodeMerger Linux x64 .NET 9.0/CodeMerger" "Artifacts/CodeMerger.Linux.x64.NET.9.0"
+          cp "CodeMerger Linux x64 .NET 9.0 Portable/CodeMerger" "Artifacts/CodeMerger.Portable.Linux.x64.NET.9.0"
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          prerelease: false
+          draft: true
+          body: |
+            ### CodeMerger v${{ github.ref_name }}
+          files: Artifacts/*

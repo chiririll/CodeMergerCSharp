@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/CodeMerger.Cli/bin/Debug/net8.0/CodeMerger.Cli.dll",
+            "program": "${workspaceFolder}/CodeMerger.Cli/bin/Debug/net9.0/CodeMerger.Cli.dll",
             "args": [
                 "--sln", "${workspaceFolder}/../Threats/Threats.sln",
                 "-o", "${workspaceFolder}/.output"
