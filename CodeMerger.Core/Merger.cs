@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 
 namespace CodeMerger.Core;
 
-public class Merger
+public partial class Merger
 {
     private readonly CodeMergingOptions options;
 

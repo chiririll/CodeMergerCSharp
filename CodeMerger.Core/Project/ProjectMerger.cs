@@ -17,14 +17,19 @@ internal class ProjectMerger
 
     public async Task<string> Merge()
     {
+        var definedSymbols = ((CSharpParseOptions)project.ParseOptions!).PreprocessorSymbolNames;
+
+        var commentRemover = new CommentRemovalRewriter();
+        var conditionalRemover = new ConditionalDirectiveRemover(definedSymbols);
+
         foreach (var document in project.Documents)
         {
             var node = await document.GetSyntaxRootAsync();
+            node = commentRemover.Visit(node);
+            node = conditionalRemover.Visit(node);
 
             if (node == null)
-            {
                 continue;
-            }
 
             ProcessUsings(node);
             ProcessNamespaces(node);

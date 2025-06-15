@@ -13,7 +13,7 @@
             "program": "${workspaceFolder}/CodeMerger.Cli/bin/Debug/net8.0/CodeMerger.Cli.dll",
             "args": [
                 "--sln", "${workspaceFolder}/../Threats/Threats.sln",
-                "-o", "${workspaceFolder}/out"
+                "-o", "${workspaceFolder}/.output"
             ],
             "cwd": "${workspaceFolder}/CodeMerger.Cli",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
